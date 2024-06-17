@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/sina-byn/go-jwt-auth/pkg/blacklist"
 	"github.com/sina-byn/go-jwt-auth/pkg/utils"
 
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,11 @@ func Authenticate(c *gin.Context) {
 	if token == "" {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Not authorized"})
 		return
+	}
+
+	if blacklist.BlockedTokens.Blocked(token) {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Revoked token"})
+		return 
 	}
 
 	tokenClaims, err := utils.VerifyToken(token, "access")

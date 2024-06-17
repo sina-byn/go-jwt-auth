@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sina-byn/go-jwt-auth/pkg/blacklist"
 	"github.com/sina-byn/go-jwt-auth/pkg/user"
 )
 
@@ -44,18 +45,23 @@ func loginHandler(c *gin.Context) {
 }
 
 func refreshHandler(c *gin.Context) {
-	var bodyStruct struct {
+	var RequestBody struct {
 		RefreshToken string `json:"refreshToken" binding:"required"`
 	}
 
-	err := c.ShouldBindJSON(&bodyStruct)
+	err := c.ShouldBindJSON(&RequestBody)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, "Could not parse request data")
 		return
 	}
 
-	refreshedTokenPair, err := Refresh(bodyStruct.RefreshToken)
+	if blacklist.BlockedTokens.Blocked(RequestBody.RefreshToken) {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Revoked token"})
+		return
+	}
+
+	refreshedTokenPair, err := Refresh(RequestBody.RefreshToken)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to refresh tokens"})
