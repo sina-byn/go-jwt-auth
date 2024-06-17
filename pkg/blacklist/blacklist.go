@@ -11,18 +11,18 @@ type TokenBlackList struct {
 }
 
 var (
-	once sync.Once
-	List *TokenBlackList
+	BlockedTokens *TokenBlackList
+	once          sync.Once
 )
 
 func InitTokenBlackList() *TokenBlackList {
 	once.Do(func() {
-		List = &TokenBlackList{
+		BlockedTokens = &TokenBlackList{
 			tokens: make(map[string]time.Time),
 		}
 	})
 
-	return List
+	return BlockedTokens
 }
 
 func (tl *TokenBlackList) Block(token string) {
