@@ -5,15 +5,16 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sina-byn/go-jwt-auth/pkg/middlewares"
 )
 
 func RegisterRoutes(r *gin.Engine) *gin.RouterGroup {
 	userGroup := r.Group("/user")
 
-	userGroup.GET("/:email", getUserByEmailHandler)
+	userGroup.GET("/:email", middlewares.Authenticate, getUserByEmailHandler)
 	userGroup.POST("/", createUserHandler)
-	userGroup.PUT("/:id", updateUserHandler)
-	userGroup.DELETE("/:id", deleteUserHandler)
+	userGroup.PUT("/:id", middlewares.Authenticate, updateUserHandler)
+	userGroup.DELETE("/:id", middlewares.Authenticate, deleteUserHandler)
 
 	return userGroup
 }
