@@ -13,10 +13,10 @@ type TokenPair struct {
 	RefreshToken string
 }
 
-var jwtAccessSecret = os.Getenv("JWT_ACCESS_SECRET")
-var jwtRefreshSecret = os.Getenv("JWT_REFRESH_SECRET")
-
 func GenerateTokenPair(userId int64, email string) (*TokenPair, error) {
+	var jwtAccessSecret = os.Getenv("JWT_ACCESS_SECRET")
+	var jwtRefreshSecret = os.Getenv("JWT_REFRESH_SECRET")
+
 	if jwtAccessSecret == "" || jwtRefreshSecret == "" {
 		return nil, errors.New("JWT secrets are not set in environment variables")
 	}
@@ -52,6 +52,9 @@ func GenerateTokenPair(userId int64, email string) (*TokenPair, error) {
 }
 
 func VerifyToken(token, tokenType string) (jwt.MapClaims, error) {
+	var jwtAccessSecret = os.Getenv("JWT_ACCESS_SECRET")
+	var jwtRefreshSecret = os.Getenv("JWT_REFRESH_SECRET")
+
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 
@@ -65,7 +68,7 @@ func VerifyToken(token, tokenType string) (jwt.MapClaims, error) {
 			secret = jwtRefreshSecret
 		}
 
-		return secret, nil
+		return []byte(secret), nil
 	})
 
 	if err != nil {
