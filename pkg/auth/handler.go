@@ -13,6 +13,7 @@ func RegisterRoutes(r *gin.Engine) *gin.RouterGroup {
 	authGroup := r.Group("/auth")
 
 	authGroup.POST("/login", loginHandler)
+	authGroup.POST("/refresh", refreshHandler)
 
 	return authGroup
 }
@@ -40,4 +41,26 @@ func loginHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+func refreshHandler(c *gin.Context) {
+	var bodyStruct struct {
+		RefreshToken string `json:"refreshToken" binding:"required"`
+	}
+
+	err := c.ShouldBindJSON(&bodyStruct)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "Could not parse request data")
+		return
+	}
+
+	refreshedTokenPair, err := Refresh(bodyStruct.RefreshToken)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to refresh tokens"})
+		return
+	}
+
+	c.JSON(http.StatusOK, refreshedTokenPair)
 }
