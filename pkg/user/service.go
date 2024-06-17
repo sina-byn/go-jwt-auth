@@ -5,11 +5,19 @@ import (
 	"errors"
 
 	"github.com/sina-byn/go-jwt-auth/pkg/db"
+	"github.com/sina-byn/go-jwt-auth/pkg/utils"
 )
 
 func CreateUser(email, password string) (*int64, error) {
 	query := "INSERT INTO users (email, password) VALUES (?, ?)"
-	result, err := db.DB.Exec(query, email, password)
+
+	hashedPassword, err := utils.HashPassword(password)
+
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := db.DB.Exec(query, email, hashedPassword)
 
 	if err != nil {
 		return nil, err
