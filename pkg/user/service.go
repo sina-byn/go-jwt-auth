@@ -54,7 +54,13 @@ func UpdateUser(id int64, user *User) error {
 	}
 
 	defer stmt.Close()
-	_, err = stmt.Exec(user.Email, user.Password, user.Fullname, user.Id)
+	hashedPassword, err := utils.HashPassword(user.Password)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(user.Email, hashedPassword, user.Fullname, user.Id)
 
 	if err != nil {
 		return err
