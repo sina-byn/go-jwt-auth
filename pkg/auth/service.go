@@ -37,21 +37,7 @@ func Refresh(refreshToken string) (*utils.TokenPair, error) {
 		return nil, err
 	}
 
-	userId, ok := tokenClaims["userId"].(float64)
-
-	if !ok {
-		return nil, errors.New("invalid userId in token claims")
-	}
-
-	email, ok := tokenClaims["email"].(string)
-
-	if !ok {
-		return nil, errors.New("invalid userId in token claims")
-	}
-
-	intUserId := int64(userId)
-
-	refreshedTokenPair, err := utils.GenerateTokenPair(intUserId, email)
+	refreshedTokenPair, err := utils.GenerateTokenPair(tokenClaims.UserId, tokenClaims.Email)
 
 	return refreshedTokenPair, err
 }

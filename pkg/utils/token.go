@@ -13,6 +13,11 @@ type TokenPair struct {
 	RefreshToken string
 }
 
+type TokenClaims struct {
+	UserId int64
+	Email  string
+}
+
 func GenerateTokenPair(userId int64, email string) (*TokenPair, error) {
 	var jwtAccessSecret = os.Getenv("JWT_ACCESS_SECRET")
 	var jwtRefreshSecret = os.Getenv("JWT_REFRESH_SECRET")
@@ -51,7 +56,7 @@ func GenerateTokenPair(userId int64, email string) (*TokenPair, error) {
 	}, nil
 }
 
-func VerifyToken(token, tokenType string) (jwt.MapClaims, error) {
+func VerifyToken(token, tokenType string) (*TokenClaims, error) {
 	var jwtAccessSecret = os.Getenv("JWT_ACCESS_SECRET")
 	var jwtRefreshSecret = os.Getenv("JWT_REFRESH_SECRET")
 
@@ -87,5 +92,20 @@ func VerifyToken(token, tokenType string) (jwt.MapClaims, error) {
 		return nil, errors.New("invalid token claims")
 	}
 
-	return claims, nil
+	userId, ok := claims["userId"].(float64)
+
+	if !ok {
+		return nil, errors.New("invalid userId in token claims")
+	}
+
+	email, ok := claims["email"].(string)
+
+	if !ok {
+		return nil, errors.New("invalid email in token claims")
+	}
+
+	return &TokenClaims{
+		UserId: int64(userId),
+		Email:  email,
+	}, nil
 }
