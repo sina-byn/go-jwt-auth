@@ -33,7 +33,13 @@ func getUserByEmailHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	userResponse := UserResponse{
+		Id:       user.Id,
+		Email:    user.Email,
+		Fullname: user.Fullname,
+	}
+
+	c.JSON(http.StatusOK, userResponse)
 }
 
 func createUserHandler(c *gin.Context) {
