@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/sina-byn/go-jwt-auth/pkg/blacklist"
 	"github.com/sina-byn/go-jwt-auth/pkg/user"
 	"github.com/sina-byn/go-jwt-auth/pkg/utils"
 )
@@ -28,6 +29,14 @@ func Login(email, password string) (*utils.TokenPair, error) {
 	tokenPair, err := utils.GenerateTokenPair(user.Id, email)
 
 	return tokenPair, err
+}
+
+func Logout(tokens ...string) {
+	for _, token := range tokens {
+		if token != "" {
+			blacklist.BlockedTokens.Block(token)
+		}
+	}
 }
 
 func Refresh(refreshToken string) (*utils.TokenPair, error) {

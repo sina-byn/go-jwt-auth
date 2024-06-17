@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sina-byn/go-jwt-auth/pkg/blacklist"
@@ -14,6 +15,7 @@ func RegisterRoutes(r *gin.Engine) *gin.RouterGroup {
 	authGroup := r.Group("/auth")
 
 	authGroup.POST("/login", loginHandler)
+	authGroup.POST("/logout", logoutHandler)
 	authGroup.POST("/refresh", refreshHandler)
 
 	return authGroup
@@ -42,6 +44,35 @@ func loginHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+func logoutHandler(c *gin.Context) {
+	authHeader := c.Request.Header.Get("Authorization")
+	var RequestBody struct {
+		RefreshToken string `json:"refreshToken"`
+	}
+
+	err := c.ShouldBindJSON(&RequestBody)
+
+	if err != nil {
+		RequestBody.RefreshToken = ""
+	}
+
+	if authHeader == "" && RequestBody.RefreshToken == "" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "No tokens provided"})
+		return
+	}
+
+	accessToken := strings.TrimSpace(strings.Split(authHeader, " ")[1])
+
+	if accessToken == "" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid token provided"})
+		return
+	}
+
+	Logout(accessToken, RequestBody.RefreshToken)
+
+	c.Status(http.StatusNoContent)
 }
 
 func refreshHandler(c *gin.Context) {
