@@ -8,7 +8,7 @@ import (
 	"github.com/sina-byn/go-jwt-auth/pkg/utils"
 )
 
-func Login(email, password string) (*string, error) {
+func Login(email, password string) (*utils.TokenPair, error) {
 	user, err := user.GetUserByEmail(email)
 
 	if user == nil && err == nil {
@@ -25,7 +25,7 @@ func Login(email, password string) (*string, error) {
 		return nil, errors.New("invalid password")
 	}
 
-	token, err := utils.GenerateToken(user.Id, email)
+	tokenPair, err := utils.GenerateTokenPair(user.Id, email)
 
-	return &token, err
+	return tokenPair, err
 }
